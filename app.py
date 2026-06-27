@@ -13,7 +13,7 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
-    if st.button("🚀 Convert to Markdown", type="primary"):
+    if st.button("Convert to Markdown", type="primary"):
         with st.spinner("Converting securely..."):
             # Safely extract only the file extension
             _, file_extension = os.path.splitext(uploaded_file.name)

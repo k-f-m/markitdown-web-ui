@@ -2,6 +2,8 @@
 
 Welcome! This is an independent, privacy-focused graphical web interface for Microsoft's `MarkItDown` engine. It provides an intuitive, local drag-and-drop workspace to convert your documents (such as PDF, DOCX, PPTX, XLSX, images, and audio) into clean Markdown optimized for LLMs, writing assistants, and text-analysis workflows.
 
+![MarkItDown Web UI screenshot](./screenshot.JPG)
+
 ---
 
 ## ✨ Privacy-Focused Design
