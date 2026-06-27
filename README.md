@@ -1,12 +1,12 @@
 # MarkItDown Web UI
 
-MarkItDown Web UI is a local Streamlit interface for the MarkItDown conversion engine. It provides a simple browser-based workflow for turning documents such as PDF, DOCX, PPTX, XLSX, images, and audio files into Markdown for LLM, search, and knowledge-management workflows.
+MarkItDown Web UI is a local Streamlit interface for the [MarkItDown](https://github.com/microsoft/markitdown) conversion engine. It provides a simple browser-based workflow for turning documents such as PDF, DOCX, PPTX, XLSX, images, and audio files into Markdown for LLM, search, and knowledge-management workflows.
 
 ![MarkItDown Web UI screenshot](./screenshot.JPG)
 
 ## Overview
 
-This project packages a lightweight web front end around MarkItDown so files can be converted without using the command line directly. The application is designed for local use and emphasizes straightforward setup, predictable file handling, and a clear conversion flow.
+This project packages a lightweight web front end around [MarkItDown](https://github.com/microsoft/markitdown) so files can be converted without using the command line directly. The application is designed for local use and emphasizes straightforward setup, predictable file handling, and a clear conversion flow.
 
 ## Key Capabilities
 
@@ -125,7 +125,7 @@ After startup, open `http://localhost:8501` in your browser if Streamlit does no
 
 ## Notes
 
-- This repository is an independent wrapper around the MarkItDown project.
+- This repository is an independent web UI wrapper around the upstream [MarkItDown](https://github.com/microsoft/markitdown) project.
 - It is not officially affiliated with or endorsed by Microsoft.
 - The software is provided under the MIT License.
 
