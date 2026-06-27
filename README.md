@@ -1,84 +1,136 @@
-# Secure MarkItDown Web UI
+# MarkItDown Web UI
 
-Welcome! This is an independent, privacy-focused graphical web interface for Microsoft's `MarkItDown` engine. It provides an intuitive, local drag-and-drop workspace to convert your documents (such as PDF, DOCX, PPTX, XLSX, images, and audio) into clean Markdown optimized for LLMs, writing assistants, and text-analysis workflows.
+MarkItDown Web UI is a local Streamlit interface for the MarkItDown conversion engine. It provides a simple browser-based workflow for turning documents such as PDF, DOCX, PPTX, XLSX, images, and audio files into Markdown for LLM, search, and knowledge-management workflows.
 
 ![MarkItDown Web UI screenshot](./screenshot.JPG)
 
----
+## Overview
 
-## ✨ Privacy-Focused Design
+This project packages a lightweight web front end around MarkItDown so files can be converted without using the command line directly. The application is designed for local use and emphasizes straightforward setup, predictable file handling, and a clear conversion flow.
 
-This application is built with local-first, privacy-oriented practices in mind to help keep you in control of your data:
+## Key Capabilities
 
-* **🛡️ Local-First & Offline Processing:** The application is configured to call `convert_local()`. This design ensures that processing occurs on your local machine rather than routing your documents through external public web APIs.
-* **💻 Sandboxed File Handling:** To reduce path risks, the original filenames of your uploaded files are bypassed and replaced with randomized temporary IDs. This helps keep your local directory organized and minimizes the risk of file conflicts.
-* **🧹 Automated Temporary Cleanup:** Once your file is processed, the system-level wrapper is designed to automatically remove the temporary working files from your storage drive.
-* **⚙️ Configurable Upload Limits:** Helps protect your system's memory and CPU resources by restricting the default accepted file size (set to 10MB by default).
+- Browser-based interface built with Streamlit
+- Local document conversion through MarkItDown
+- Drag-and-drop upload flow for common file types
+- Markdown output that can be reviewed and downloaded immediately
+- Temporary file cleanup after processing
+- Configurable upload limits to protect local system resources
 
----
+## Supported File Types
 
-## 📂 Project Structure
+The current web UI is configured for common local upload scenarios and accepts the following file types directly through the browser picker:
 
-This project is lightweight and designed to be easy to explore:
+- PDF
+- DOCX
+- PPTX
+- XLSX
+- HTML
+- CSV
+- JSON
+- XML
+
+The underlying MarkItDown engine supports a broader set of formats, including images, audio, EPUB, ZIP, and additional document sources when the relevant optional dependencies are installed. In this repository, `markitdown[all]` is included in the root requirements, so the backend engine is provisioned with full converter support even though the current UI exposes a narrower upload list.
+
+## How It Works
+
+```mermaid
+flowchart LR
+	A[Upload file in browser] --> B[Streamlit web interface]
+	B --> C[Temporary local working file]
+	C --> D[MarkItDown conversion engine]
+	D --> E[Markdown result]
+	E --> F[Preview and download]
+```
+
+## Privacy and Local Processing
+
+The application is intended for local-first use. Files are processed on the local machine through the MarkItDown engine rather than being sent to a public conversion API. Uploaded files are written to temporary local storage with generated identifiers instead of relying on the original filename, which reduces path and naming conflicts. Temporary working files are removed after processing completes.
+
+## Project Structure
+
+This repository is an extended clone of the upstream MarkItDown project. The root contains the Streamlit web UI, while the `packages/` directory retains the upstream Python packages and related extensions.
 
 ```text
-my-markitdown-ui/
+markitdown-web-ui/
+├── .devcontainer/
+├── .github/
 ├── .streamlit/
-│   └── config.toml      # Configures safe local file uploading parameters
-├── .gitignore           # Keeps your repository clean from temporary test files
-├── LICENSE              # Standard open-source MIT license
-├── README.md            # You are here! Getting started guide
-├── app.py               # The clean, security-hardened Streamlit app
-└── requirements.txt     # App package dependencies
+│   └── config.toml
+├── app.py
+├── Dockerfile
+├── packages/
+│   ├── markitdown/
+│   ├── markitdown-mcp/
+│   ├── markitdown-ocr/
+│   └── markitdown-sample-plugin/
+├── README.md
+├── requirements.txt
+└── screenshot.JPG
 ```
 
----
+For this project, this structure is more accurate than a minimal single-app layout because the repository is not just a standalone Streamlit app; it also vendors the upstream MarkItDown workspace that the UI depends on and extends.
 
-## 🛠️ Prerequisites & Setup
+## Requirements
 
-### 1. Requirements
+- Python 3.10 or later
+- A virtual environment such as `.venv`
 
-* **Python 3.10** or higher.
-* A standard virtual environment (`.venv`) to keep your system clean.
-
-### 2. Installation & Setup
-
-Clone the repository and jump in:
+## Installation
 
 ```bash
-git clone [https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git](https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git)
-cd YOUR-REPO-NAME
+git clone https://github.com/k-f-m/markitdown-web-ui.git
+cd markitdown-web-ui
 ```
-
-Create and activate your virtual environment:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-Install the dependencies:
+On Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+On macOS or Linux:
+
+```bash
+source .venv/bin/activate
+```
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## 🚀 Running the App
-
-Ready to convert? Fire up the interface:
+## Running the Application
 
 ```bash
 streamlit run app.py
 ```
 
-A browser window will automatically launch at `http://localhost:8501` showing your conversion workspace. Drag in a file, click convert, and download your Markdown output.
+After startup, open `http://localhost:8501` in your browser if Streamlit does not open it automatically.
 
----
+## Typical Workflow
 
-## ⚖️ License, Disclaimers & Terms
+1. Start the Streamlit application.
+2. Upload a supported file through the web interface.
+3. Run the conversion.
+4. Review the generated Markdown.
+5. Download or copy the result for downstream use.
 
-* **License:** This project is open-source software distributed under the terms of the permissive **MIT License**.
-* **Warranty & Liability Disclaimer:** This software is provided "as-is" without warranty of any kind, express or implied. By using this software, you agree that the creators, authors, and contributors are not liable for any issues, data loss, performance degradation, security incidents, or system anomalies resulting from its execution or deployment. Please see the accompanying `LICENSE` file for the standard open-source legal terms.
-* **Trademarks:** This is an independent, community-contributed wrapper tool. It is not officially associated with, sponsored by, or endorsed by Microsoft Corporation. All trademarks belong to their respective owners.
+## Known Limitations
+
+- The current Streamlit upload whitelist is narrower than the full MarkItDown engine capability.
+- The UI currently accepts PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, and XML files, even though the installed backend can support additional formats such as images, audio, EPUB, and ZIP.
+- Expanding the UI to expose more of the backend converter surface will require corresponding updates to the upload picker, validation flow, and user-facing guidance.
+
+## Notes
+
+- This repository is an independent wrapper around the MarkItDown project.
+- It is not officially affiliated with or endorsed by Microsoft.
+- The software is provided under the MIT License.
+
+## License
+
+This project is distributed under the MIT License. See the `LICENSE` file for details.
