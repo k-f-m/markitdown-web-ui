@@ -3,13 +3,41 @@ import os
 import tempfile
 from markitdown import MarkItDown
 
+SUPPORTED_UPLOAD_TYPES = [
+    "pdf",
+    "docx",
+    "pptx",
+    "xlsx",
+    "csv",
+    "html",
+    "htm",
+    "txt",
+    "text",
+    "md",
+    "markdown",
+    "json",
+    "jsonl",
+    "xml",
+    "epub",
+    "msg",
+    "ipynb",
+    "zip",
+    "jpg",
+    "jpeg",
+    "png",
+    "wav",
+    "mp3",
+    "m4a",
+    "mp4",
+]
+
 st.set_page_config(page_title="Secure MarkItDown UI", layout="wide")
 st.title("📄 Secure MarkItDown Converter")
 st.write("Your files are processed locally and securely.")
 
 uploaded_file = st.file_uploader(
     "Choose a file", 
-    type=["pdf", "docx", "pptx", "xlsx", "html", "csv", "json", "xml"]
+    type=SUPPORTED_UPLOAD_TYPES,
 )
 
 if uploaded_file:

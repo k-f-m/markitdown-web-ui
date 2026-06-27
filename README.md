@@ -19,18 +19,16 @@ This project packages a lightweight web front end around MarkItDown so files can
 
 ## Supported File Types
 
-The current web UI is configured for common local upload scenarios and accepts the following file types directly through the browser picker:
+The current web UI accepts the following file types directly through the browser picker:
 
-- PDF
-- DOCX
-- PPTX
-- XLSX
-- HTML
-- CSV
-- JSON
-- XML
+- Documents: PDF, DOCX, PPTX, XLSX, EPUB, MSG, ZIP
+- Web and structured text: HTML, HTM, CSV, JSON, JSONL, XML
+- Plain text and Markdown: TXT, TEXT, MD, MARKDOWN
+- Notebooks: IPYNB
+- Images: JPG, JPEG, PNG
+- Audio and video: WAV, MP3, M4A, MP4
 
-The underlying MarkItDown engine supports a broader set of formats, including images, audio, EPUB, ZIP, and additional document sources when the relevant optional dependencies are installed. In this repository, `markitdown[all]` is included in the root requirements, so the backend engine is provisioned with full converter support even though the current UI exposes a narrower upload list.
+The underlying MarkItDown engine supports a broader set of formats and integrations when the relevant optional dependencies are installed. In this repository, `markitdown[all]` is included in the root requirements, so the backend engine is provisioned with broad converter support and the current UI now exposes a larger subset of those local file-based converters.
 
 ## How It Works
 
@@ -121,9 +119,9 @@ After startup, open `http://localhost:8501` in your browser if Streamlit does no
 
 ## Known Limitations
 
-- The current Streamlit upload whitelist is narrower than the full MarkItDown engine capability.
-- The UI currently accepts PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, and XML files, even though the installed backend can support additional formats such as images, audio, EPUB, and ZIP.
-- Expanding the UI to expose more of the backend converter surface will require corresponding updates to the upload picker, validation flow, and user-facing guidance.
+- The current Streamlit upload whitelist is still narrower than the full MarkItDown engine capability.
+- The UI focuses on local file-based conversions and does not expose URL-driven or service-backed flows such as YouTube URLs or Azure-backed conversion paths.
+- Some accepted file types may depend on optional native tools or libraries at runtime for best results, even though `markitdown[all]` is installed.
 
 ## Notes
 
