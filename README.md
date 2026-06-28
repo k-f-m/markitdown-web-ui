@@ -1,8 +1,15 @@
 # MarkItDown Web UI
 
-MarkItDown Web UI is a local Streamlit interface for the [MarkItDown](https://github.com/microsoft/markitdown) conversion engine. It provides a simple browser-based workflow for turning documents such as PDF, DOCX, PPTX, XLSX, images, and audio files into Markdown for LLM, search, and knowledge-management workflows.
+MarkItDown Web UI is a local, privacy-first Streamlit interface for the [MarkItDown](https://github.com/microsoft/markitdown) conversion engine. Drop in your documents, spreadsheets, notebooks, and images and get clean Markdown back — one file or a whole batch at once — ready for LLM, RAG, search, and knowledge-management workflows.
 
 ![MarkItDown Web UI screenshot](./screenshot.JPG)
+
+## Why use it
+
+- **Local by default.** Conversions run on your machine; anything that could leave it is off until you opt in.
+- **Batch friendly.** Convert many files in a single run and download them all as one ZIP.
+- **Zero command line.** A clean browser UI with drag-and-drop, live progress, and per-file results.
+- **Honest about trade-offs.** Paths that may call a third party are clearly labeled and disabled by default.
 
 ## Overview
 
@@ -12,10 +19,12 @@ This project packages a lightweight web front end around [MarkItDown](https://gi
 
 - Browser-based interface built with Streamlit
 - Local document conversion through MarkItDown
-- Drag-and-drop upload flow for common file types
-- Explicit opt-in for formats that may trigger third-party transcription
-- Markdown output that can be reviewed and downloaded immediately
-- Temporary file cleanup after processing
+- Drag-and-drop upload for one or many files at once
+- Live progress and a per-file status card (converted, blocked, or failed)
+- Individual Markdown downloads plus a single ZIP of all successful outputs
+- A settings sidebar with explicit opt-in toggles for any non-local path
+- ZIP archives inspected before conversion to honor your privacy choices
+- Temporary file cleanup after each run
 - Configurable upload limits to protect local system resources
 
 ## Supported File Types
@@ -28,23 +37,23 @@ The current web UI exposes the following local file types by default through the
 - Notebooks: IPYNB
 - Images: JPG, JPEG, PNG
 
-Audio and video formats are available only after an explicit UI opt-in:
+Audio and video formats are available only after an explicit opt-in toggle in the sidebar:
 
 - Audio and video: WAV, MP3, M4A, MP4
 
 The underlying MarkItDown engine supports a broader set of formats and integrations when the relevant optional dependencies are installed. In this repository, `markitdown[all]` is included in the root requirements, so the backend engine is provisioned with broad converter support and the current UI now exposes a larger subset of those local file-based converters.
 
-ZIP uploads are inspected before conversion. If an archive contains audio or video files, the app blocks conversion unless the transcription opt-in has been enabled.
+ZIP uploads are inspected before conversion. If an archive contains files that would require a conversion path you have not enabled (for example audio or video), that archive is blocked until you turn on the matching opt-in.
 
 ## How It Works
 
 ```mermaid
 flowchart LR
-	A[Upload file in browser] --> B[Streamlit web interface]
-	B --> C[Temporary local working file]
+	A[Upload one or more files] --> B[Streamlit web interface]
+	B --> C[Per-file temporary working file]
 	C --> D[MarkItDown conversion engine]
-	D --> E[Markdown result]
-	E --> F[Preview and download]
+	D --> E[Per-file status: converted / blocked / failed]
+	E --> F[Preview, per-file download, or ZIP of all outputs]
 ```
 
 ## Privacy and Local Processing
@@ -120,12 +129,12 @@ After startup, open `http://localhost:8501` in your browser if Streamlit does no
 ## Typical Workflow
 
 1. Start the Streamlit application.
-2. Upload a supported file through the web interface.
-3. Run the conversion.
-4. Review the generated Markdown.
-5. Download or copy the result for downstream use.
+2. (Optional) Open the sidebar to review settings and enable any non-local opt-in you need.
+3. Drag and drop one or more supported files onto the uploader.
+4. Click **Convert to Markdown** and watch the per-file progress.
+5. Review each result in its status card, then download files individually or grab everything as a single ZIP.
 
-For audio and video files, enable the transcription opt-in first and review the privacy warning before uploading.
+For audio and video files, enable the transcription opt-in in the sidebar and review the privacy warning before uploading.
 
 ## Known Limitations
 
