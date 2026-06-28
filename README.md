@@ -13,22 +13,28 @@ This project packages a lightweight web front end around [MarkItDown](https://gi
 - Browser-based interface built with Streamlit
 - Local document conversion through MarkItDown
 - Drag-and-drop upload flow for common file types
+- Explicit opt-in for formats that may trigger third-party transcription
 - Markdown output that can be reviewed and downloaded immediately
 - Temporary file cleanup after processing
 - Configurable upload limits to protect local system resources
 
 ## Supported File Types
 
-The current web UI accepts the following file types directly through the browser picker:
+The current web UI exposes the following local file types by default through the browser picker:
 
 - Documents: PDF, DOCX, PPTX, XLSX, EPUB, MSG, ZIP
 - Web and structured text: HTML, HTM, CSV, JSON, JSONL, XML
 - Plain text and Markdown: TXT, TEXT, MD, MARKDOWN
 - Notebooks: IPYNB
 - Images: JPG, JPEG, PNG
+
+Audio and video formats are available only after an explicit UI opt-in:
+
 - Audio and video: WAV, MP3, M4A, MP4
 
 The underlying MarkItDown engine supports a broader set of formats and integrations when the relevant optional dependencies are installed. In this repository, `markitdown[all]` is included in the root requirements, so the backend engine is provisioned with broad converter support and the current UI now exposes a larger subset of those local file-based converters.
+
+ZIP uploads are inspected before conversion. If an archive contains audio or video files, the app blocks conversion unless the transcription opt-in has been enabled.
 
 ## How It Works
 
@@ -43,7 +49,9 @@ flowchart LR
 
 ## Privacy and Local Processing
 
-The application is intended for local-first use. Files are processed on the local machine through the MarkItDown engine rather than being sent to a public conversion API. Uploaded files are written to temporary local storage with generated identifiers instead of relying on the original filename, which reduces path and naming conflicts. Temporary working files are removed after processing completes.
+The application is intended for local-first use. Files are processed on the local machine through the MarkItDown engine rather than being sent to a public conversion API, except for the opt-in conversion paths described below. Uploaded files are written to a unique temporary directory and processed without using the original file path, which avoids path-traversal and naming conflicts. Temporary working files are removed after processing completes.
+
+Audio and video transcription are treated separately in the UI. Those formats are hidden by default and require an explicit opt-in because the underlying transcription path may send media content to a third-party speech recognition service.
 
 ## Project Structure
 
@@ -117,10 +125,14 @@ After startup, open `http://localhost:8501` in your browser if Streamlit does no
 4. Review the generated Markdown.
 5. Download or copy the result for downstream use.
 
+For audio and video files, enable the transcription opt-in first and review the privacy warning before uploading.
+
 ## Known Limitations
 
 - The current Streamlit upload whitelist is still narrower than the full MarkItDown engine capability.
 - The UI focuses on local file-based conversions and does not expose URL-driven or service-backed flows such as YouTube URLs or Azure-backed conversion paths.
+- Audio and video transcription are opt-in because the current backend path may rely on third-party speech recognition rather than fully local processing.
+- ZIP archives that contain audio or video files are blocked unless the transcription opt-in is enabled.
 - Some accepted file types may depend on optional native tools or libraries at runtime for best results, even though `markitdown[all]` is installed.
 
 ## Notes
