@@ -6,10 +6,10 @@ MarkItDown Web UI is a local, privacy-first Streamlit interface for the [MarkItD
 
 ## Why use it
 
-- **Local by default.** Conversions run on your machine; anything that could leave it is off until you opt in.
-- **Batch friendly.** Convert many files in a single run and download them all as one ZIP.
-- **Zero command line.** A clean browser UI with drag-and-drop, live progress, and per-file results.
-- **Honest about trade-offs.** Paths that may call a third party are clearly labeled and disabled by default.
+- **Local by default:** Conversions run on your machine; anything that could leave it is off until you opt in.
+- **Batch friendly:** Convert many files in a single run and download them all as one ZIP.
+- **Zero command line:** A clean browser UI with drag-and-drop, live progress, and per-file results.
+- **Honest about trade-offs:** Paths that may call a third party are clearly labeled and disabled by default.
 
 ## Overview
 
