@@ -5,6 +5,24 @@ import tempfile
 import zipfile
 from markitdown import MarkItDown
 
+# Optional OCR support. The markitdown-ocr plugin extracts text from images
+# embedded in PDF/DOCX/PPTX/XLSX files by sending them to an OpenAI-compatible
+# vision model. Both imports are optional so the app runs without them; OCR is
+# only offered in the UI when both are importable.
+try:
+    from markitdown_ocr import register_converters as register_ocr_converters
+
+    OCR_PLUGIN_AVAILABLE = True
+except Exception:  # noqa: BLE001 - any import failure means OCR is unavailable
+    OCR_PLUGIN_AVAILABLE = False
+
+try:
+    from openai import OpenAI
+
+    OPENAI_SDK_AVAILABLE = True
+except Exception:  # noqa: BLE001 - any import failure means OCR is unavailable
+    OPENAI_SDK_AVAILABLE = False
+
 LOCAL_UPLOAD_TYPES = [
     "pdf",
     "docx",
@@ -98,7 +116,7 @@ def find_blocked_zip_members(
 
 
 def convert_uploaded_file(
-    uploaded_file, blocked_non_local_extensions: set[str]
+    uploaded_file, blocked_non_local_extensions: set[str], converter: MarkItDown
 ) -> dict:
     """Convert a single uploaded file to Markdown.
 
@@ -138,7 +156,6 @@ def convert_uploaded_file(
             f.write(file_bytes)
 
         try:
-            converter = MarkItDown()
             # Use local conversion specifically
             converted = converter.convert_local(secure_temp_path)
             result["status"] = "success"
@@ -148,6 +165,31 @@ def convert_uploaded_file(
         # The 'with' context manager removes the directory and its contents here
 
     return result
+
+
+def build_converter(ocr_settings: dict | None) -> MarkItDown:
+    """Create a MarkItDown converter, optionally enabling LLM-vision OCR.
+
+    OCR is only activated when explicitly requested and fully configured. When
+    it is not active, a plain local converter is returned so processing stays
+    on the machine by default.
+    """
+    converter = MarkItDown()
+    if not (ocr_settings and ocr_settings.get("active")):
+        return converter
+
+    # Build the OpenAI-compatible client only at conversion time and never
+    # persist or log the API key.
+    client = OpenAI(
+        api_key=ocr_settings["api_key"],
+        base_url=ocr_settings.get("base_url") or None,
+    )
+    register_ocr_converters(
+        converter,
+        llm_client=client,
+        llm_model=ocr_settings["model"],
+    )
+    return converter
 
 
 def markdown_filename(name: str) -> str:
@@ -252,6 +294,65 @@ with st.sidebar:
                     f".{ext}" for ext in path_extensions
                 )
 
+    # --- Optional image OCR (LLM Vision) -------------------------------------
+    # OCR is a non-local path: it sends images embedded in PDF/DOCX/PPTX/XLSX
+    # files to an OpenAI-compatible vision model. It is disabled by default and
+    # only takes effect once explicitly enabled and configured with a key.
+    ocr_settings: dict = {"active": False}
+    with st.expander("Image OCR (LLM Vision) — optional", expanded=False):
+        ocr_dependencies_ready = OCR_PLUGIN_AVAILABLE and OPENAI_SDK_AVAILABLE
+        if not ocr_dependencies_ready:
+            st.caption(
+                "OCR is unavailable in this environment. Install the optional "
+                "dependencies to enable it:"
+            )
+            st.code("pip install ./packages/markitdown-ocr[llm]", language="bash")
+        else:
+            ocr_enabled = st.toggle(
+                "Enable OCR for images inside PDF, DOCX, PPTX, and XLSX files",
+                value=False,
+                key="ocr_enabled",
+            )
+            if ocr_enabled:
+                st.warning(
+                    "OCR sends images embedded in your documents to a third-party "
+                    "vision model and is not local. Use an OpenAI-compatible "
+                    "endpoint you trust; point Base URL at a local server to keep "
+                    "it on your machine.",
+                    icon="⚠️",
+                )
+                ocr_model = st.text_input(
+                    "Vision model", value="gpt-4o", key="ocr_model"
+                )
+                ocr_base_url = st.text_input(
+                    "Base URL (optional, for OpenAI-compatible or local endpoints)",
+                    value="",
+                    key="ocr_base_url",
+                    placeholder="https://api.openai.com/v1",
+                )
+                # Masked input; the key is held only in session memory and is
+                # never logged or written to disk.
+                ocr_api_key = st.text_input(
+                    "API key",
+                    value="",
+                    type="password",
+                    key="ocr_api_key",
+                    help="Held in memory for this session only. Not stored or logged.",
+                )
+
+                if ocr_api_key and ocr_model:
+                    ocr_settings = {
+                        "active": True,
+                        "model": ocr_model.strip(),
+                        "base_url": ocr_base_url.strip(),
+                        "api_key": ocr_api_key,
+                    }
+                else:
+                    st.caption(
+                        "Enter a model and API key to activate OCR. Until then, "
+                        "documents are converted locally without OCR."
+                    )
+
     with st.expander("Supported file types", expanded=False):
         st.markdown(
             "- **Documents:** PDF, DOCX, PPTX, XLSX, EPUB, MSG\n"
@@ -261,6 +362,10 @@ with st.sidebar:
             "- **Images:** JPG, PNG\n"
             "- **Archives:** ZIP (inspected before conversion)\n"
             "- **Audio/Video (opt-in):** WAV, MP3, M4A, MP4"
+        )
+        st.caption(
+            "Optional OCR (LLM Vision) can extract text from images embedded in "
+            "PDF, DOCX, PPTX, and XLSX files when enabled above."
         )
 
     st.divider()
@@ -298,6 +403,19 @@ if uploaded_files:
         )
 
     if convert_clicked:
+        try:
+            converter = build_converter(ocr_settings)
+        except Exception as exc:  # noqa: BLE001 - configuration error surfaced to user
+            st.error(f"Could not start OCR-enabled conversion: {exc}")
+            st.stop()
+
+        if ocr_settings.get("active"):
+            st.info(
+                "OCR via LLM Vision is active for PDF, DOCX, PPTX, and XLSX files. "
+                "Embedded images are sent to the configured endpoint.",
+                icon="🔎",
+            )
+
         results: list[dict] = []
         progress = st.progress(0.0, text="Starting…")
         for index, uploaded_file in enumerate(uploaded_files, start=1):
@@ -306,7 +424,9 @@ if uploaded_files:
                 text=f"Converting {uploaded_file.name} ({index}/{len(uploaded_files)})",
             )
             results.append(
-                convert_uploaded_file(uploaded_file, blocked_non_local_extensions)
+                convert_uploaded_file(
+                    uploaded_file, blocked_non_local_extensions, converter
+                )
             )
         progress.empty()
         st.session_state["results"] = results

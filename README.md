@@ -24,6 +24,7 @@ This project packages a lightweight web front end around [MarkItDown](https://gi
 - Individual Markdown downloads plus a single ZIP of all successful outputs
 - A settings sidebar with explicit opt-in toggles for any non-local path
 - ZIP archives inspected before conversion to honor your privacy choices
+- Optional LLM-vision OCR for images embedded in PDF, DOCX, PPTX, and XLSX (opt-in)
 - Temporary file cleanup after each run
 - Configurable upload limits to protect local system resources
 
@@ -61,6 +62,28 @@ flowchart LR
 The application is intended for local-first use. Files are processed on the local machine through the MarkItDown engine rather than being sent to a public conversion API, except for the opt-in conversion paths described below. Uploaded files are written to a unique temporary directory and processed without using the original file path, which avoids path-traversal and naming conflicts. Temporary working files are removed after processing completes.
 
 Audio and video transcription are treated separately in the UI. Those formats are hidden by default and require an explicit opt-in because the underlying transcription path may send media content to a third-party speech recognition service.
+
+Image OCR is likewise non-local and disabled by default. When enabled, it sends images embedded in your documents to an OpenAI-compatible vision model (see the section below). The API key you provide is held only in memory for the session and is never written to disk or logged.
+
+## Optional: Image OCR (LLM Vision)
+
+Many PDFs, slide decks, and documents contain text that lives inside images (scans, screenshots, charts). The optional OCR path uses the bundled [`markitdown-ocr`](./packages/markitdown-ocr) plugin to extract that text with an OpenAI-compatible vision model.
+
+> **This is a non-local path.** Enabling OCR sends embedded images to whichever endpoint you configure. Only enable it for content you are comfortable sending to that provider. To keep everything on your machine, point **Base URL** at a local OpenAI-compatible server (for example a local vLLM or Ollama endpoint).
+
+**Enable it:**
+
+1. Install the optional dependencies (not included in the default `requirements.txt`):
+
+   ```bash
+   pip install ./packages/markitdown-ocr[llm]
+   ```
+
+2. In the sidebar, open **Image OCR (LLM Vision)** and turn it on.
+3. Set the vision model (default `gpt-4o`), an optional Base URL for OpenAI-compatible or local endpoints, and your API key.
+4. Convert as usual. OCR applies only to PDF, DOCX, PPTX, and XLSX files; other formats are unaffected.
+
+If OCR is left off, or a key is not provided, documents are converted locally without OCR.
 
 ## Project Structure
 
@@ -142,6 +165,7 @@ For audio and video files, enable the transcription opt-in in the sidebar and re
 - The UI focuses on local file-based conversions and does not expose URL-driven or service-backed flows such as YouTube URLs or Azure-backed conversion paths.
 - Audio and video transcription are opt-in because the current backend path may rely on third-party speech recognition rather than fully local processing.
 - ZIP archives that contain audio or video files are blocked unless the transcription opt-in is enabled.
+- Image OCR is opt-in and non-local: when enabled it sends embedded images to an OpenAI-compatible vision endpoint and requires an API key.
 - Some accepted file types may depend on optional native tools or libraries at runtime for best results, even though `markitdown[all]` is installed.
 
 ## Notes
